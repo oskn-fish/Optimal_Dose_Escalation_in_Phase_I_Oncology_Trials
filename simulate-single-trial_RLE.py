@@ -16,7 +16,7 @@ ray.init(ignore_reinit_error=True, log_to_driver=False)
 
 scenarioID = 8
 SAFE_MODE = True
-checkpoint_path = 'checkpoint/checkpoint-RLE'
+checkpoint_path = 'checkpoint/checkpoint_003000'
 measure_names = ['MTD', 'reward']
 state_names = ['state' + str(num).zfill(2) for num in range(1+6+6+2)]
 prob_names = ['prob' + str(i) for i in range(3+6)]
@@ -24,6 +24,7 @@ prob_names = ['prob' + str(i) for i in range(3+6)]
 config = DEFAULT_CONFIG.copy()
 config['seed'] = 1234
 config['gamma'] = 1.0
+config['framework'] = 'torch'
 config['num_workers'] = 1
 config['num_sgd_iter'] = 20
 config['num_cpus_per_worker'] = 1
@@ -31,9 +32,9 @@ config['sgd_minibatch_size'] = 200
 config['train_batch_size'] = 10000
 sim_config = {'D':6, 'N_cohort':3, 'N_total':36, 'phi':0.25, 'scenario':str(scenarioID)}
 config['env_config'] = sim_config
-test_agent = PPOTrainer(config, ENV_NAME)
+agent = PPOTrainer(config, ENV_NAME)
 env = gym.make(ENV_NAME, config = sim_config)
-test_agent.restore(checkpoint_path)
+agent.load_checkpoint(checkpoint_path)
 
 results_score = []
 results_cohort = []
@@ -44,7 +45,7 @@ state = env.reset()
 done = False
 cohortID = 1
 while not done:
-    action = test_agent.compute_action(state, full_fetch = True)
+    action = agent.compute_single_action(state, full_fetch = True)
     probs = softmax(action[2]['action_dist_inputs'])
     action = np.argmax(probs)
 
