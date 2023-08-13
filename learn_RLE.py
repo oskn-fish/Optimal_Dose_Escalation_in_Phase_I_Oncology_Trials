@@ -1,31 +1,62 @@
 import time
 import numpy as np
 import pandas as pd
-import gym
+import gymnasium as gym
 import ray
-from ray.rllib.agents.ppo import PPOTrainer, DEFAULT_CONFIG
+# from ray.rllib.agents.ppo   import PPOTrainer, DEFAULT_CONFIG
+from ray.rllib.algorithms.ppo   import PPOConfig
+from ray.rllib.algorithms import ppo
 import RLE
 
 from ray.tune.registry import register_env
 from RLE.envs.RLEEnv import RLEEnv
 
 ENV_NAME = 'RLE-v0'
-register_env(ENV_NAME, lambda config: RLEEnv(config))
+# register_env(ENV_NAME, lambda config: RLEEnv(config))
+
+# def env_creator(config):
+#     # rleenv = gym.make("RLE-v0", config=env_config)
+#     return RLEEnv(config)
+
+# register_env(ENV_NAME, env_creator)
 
 ray.init(ignore_reinit_error=True, log_to_driver=False)
 
-config = DEFAULT_CONFIG.copy()
-config['seed'] = 123
-config['gamma'] = 1.0
-config['framework'] = 'torch'
-config['num_workers'] = 4
-config['num_sgd_iter'] = 20
-config['num_cpus_per_worker'] = 1
-config['sgd_minibatch_size'] = 200
-config['train_batch_size'] = 10000
-config['env_config'] = {'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'}
+# config = DEFAULT_CONFIG.copy()
+config = PPOConfig()
+# config['seed'] = 123
+config = config.debugging(seed=123)
+# config['gamma'] = 1.0
+config = config.training(gamma=1.0)
+# config['framework'] = 'torch'
+config = config.framework("torch")
+# config['num_workers'] = 4
+config = config.rollouts(num_rollout_workers=4)
+# config['num_sgd_iter'] = 20
+config = config.training(num_sgd_iter=20)
+# config['num_cpus_per_worker'] = 1 
+config = config.resources(num_cpus_per_worker=1)
+# config['sgd_minibatch_size'] = 200
+config = config.training(sgd_minibatch_size=200)
+# config['train_batch_size'] = 10000
+config = config.training(train_batch_size=10000)
+# config['env_config'] = {'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'}
+config = config.environment(env=RLEEnv, env_config={'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'})#env=ENV_NAME, 
+# config = config.environment(env_config={'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'})
 
-agent = PPOTrainer(config, ENV_NAME)
+# agent = PPOTrainer(config, ENV_NAME)
+# print(config.to_dict())
+
+# added to avoid ValueError: Your gymnasium.Env's `reset()` method raised an Exception!
+# config = config.environment(disable_env_checking=True)
+# config = config.environment(ENV_NAME, env_config={'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'}, disable_env_checking=True)
+agent = config.build()
+# agent = config.build()
+
+# algo = ppo.PPO(env=ENV_NAME, config={
+#     "env_config": {'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'},  # config to pass to env class
+#     "disable_env_checking": True,
+# })
 
 N = 3000
 results = []
