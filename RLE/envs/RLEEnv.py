@@ -1,7 +1,7 @@
 import numpy as np
-import gym
-from gym import spaces
-from gym.utils import seeding
+import gymnasium as gym
+from gymnasium import spaces
+from gymnasium.utils import seeding
 
 class RLEEnv(gym.Env):
     def __init__(self, config):
@@ -100,7 +100,7 @@ class RLEEnv(gym.Env):
                 [0.05,0.05,0.071,0.15,0.29,0.486],
                 [0.05,0.05,0.05,0.071,0.15,0.29]
             ])
-            scenario_idx = self.np_random.randint(low = 0, high = 20)
+            scenario_idx = self.np_random.integers(low = 0, high = 20)
             self.p_true = scenarios[scenario_idx]
             MTD_true = [0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5]
             self.MTD_true = MTD_true[scenario_idx]
