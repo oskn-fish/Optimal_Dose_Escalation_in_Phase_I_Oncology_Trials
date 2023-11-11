@@ -43,7 +43,7 @@ config = config.training(train_batch_size=10000)
 # config['env_config'] = {'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'}
 config = config.environment(env=RLEEnv, env_config={'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'})#env=ENV_NAME, 
 # config = config.environment(env_config={'D':6, 'N_cohort':3, 'N_total':36, 'scenario':'random'})
-
+config = config.reporting()
 # agent = PPOTrainer(config, ENV_NAME)
 # print(config.to_dict())
 
@@ -72,7 +72,7 @@ for n in range(1, N+1):
                'episode_reward_max':  result['episode_reward_max'],
                'episode_len_mean':    result['episode_len_mean']}
     episode_data.append(episode)
-    print(f'{n:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_max"]:8.4f}')
+    print(f'{n:3d}: Min/Mean/Max reward: {result["episode_reward_min"]:8.4f}/{result["episode_reward_mean"]:8.4f}/{result["episode_reward_max"]:8.4f}/{result["episode_len_mean"]:8.4f}')
     if n >= 1000 and n % 500 == 0:
         checkpoint_path = agent.save()
         print(checkpoint_path)
@@ -82,5 +82,8 @@ print('time spent: ' + str(end_time - start_time))
 
 df = pd.DataFrame(data=episode_data)
 df.to_csv('result_learn_RLE.csv', index=False)
+
+import matplotlib.pyplot as plt
+
 
 ray.shutdown()
